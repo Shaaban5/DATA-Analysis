@@ -15,6 +15,11 @@ Notes:
 Notes:
 
 ```{r Third Qualitative Variable}
+library(ggplot2)
+library(tidyr)
+library(reshape2)
+library(dplyr)
+
 pf <- read.delim('pseudo_facebook.tsv')
 
 ggplot(aes(x = age), data = subset(pf, !is.na(gender)))+
@@ -62,14 +67,6 @@ ggplot(aes(x = age, y= median_friend_count), data = pf.fc_by_age_gender)+
 
 ### Thinking in Ratios
 Notes:
-```{r}
-install.packages("tidyr")
-library(tidyr)
-
-spread(subset(pf.fc_by_age_gender, 
-       select = c('gender', 'age', 'median_friend_count')), 
-       gender, median_friend_count)
-```
 
 ***
 
@@ -82,8 +79,14 @@ Notes:
 Notes:
 
 ```{r}
-install.packages('reshape2')
-library(reshape2)
+pf.fc_by_age_gender.wide <-
+  subset(pf.fc_by_age_gender[c('age', 'gender', 'median_friend_count')],
+         !is.na(gender)) %>%
+  spread(gender, median_friend_count) %>%
+  mutate(ratio = male / female)
+
+head(pf.fc_by_age_gender.wide, 3)
+
 ```
 
 
@@ -93,15 +96,27 @@ library(reshape2)
 Notes:
 
 ```{r Ratio Plot}
+ggplot(data= pf.fc_by_age_gender.wide, aes(age, male))+
+  geom_line(color = 'green', linetype = 5)+
+  geom_line(aes(age, female), color = 'red', linetype = 4)+
+  geom_hline(yintercept= mean(pf.fc_by_age_gender.wide$male), color='red', linetype = 3)+
+  geom_hline(yintercept= mean(pf.fc_by_age_gender.wide$female), color='green', linetype = 5)
 
 ```
 
+```{r}
+ggplot(data=pf.fc_by_age_gender.wide, aes(age, female/male))+ # checking the ration btw f & m
+  geom_line()+
+  geom_hline(yintercept = 1, linetype=2 , alpha=0.5) # intercept at 1 as its ration when f=m
+
+```
 ***
 
 ### Third Quantitative Variable
 Notes:
 
 ```{r Third Quantitative Variable}
+pf$year_joined <- floor(2014 - pf$tenure / 365)
 
 ```
 
@@ -111,7 +126,9 @@ Notes:
 Notes:
 
 ```{r Cut a Variable}
+pf$year_joined.bucket <- cut(pf$year_joined, breaks = c(2004, 2009, 2011, 2012, 2014), labels = c("(2004,2009]", "(2009,2011]", "(2011,2012]", "(2012,2014]"))
 
+table(pf$year_joined.bucket)
 ```
 
 ***
@@ -120,7 +137,9 @@ Notes:
 Notes:
 
 ```{r Plotting it All Together}
-
+ggplot(data= subset(pf, !is.na(year_joined.bucket)), aes(age, friend_count, color= year_joined.bucket))+
+  geom_line(stat = 'summary', fun.y = median)+
+  coord_cartesian(xlim= c(min(pf$age),90))
 ```
 
 ***
@@ -129,7 +148,12 @@ Notes:
 Notes:
 
 ```{r Plot the Grand Mean}
+mean_data <- subset(pf, !is.na(age))
 
+ggplot(data= subset(pf, !is.na(year_joined.bucket)), aes(age, friend_count))+
+  geom_line(aes(color = year_joined.bucket),stat = 'summary', fun.y = mean)+
+  coord_cartesian(xlim= c(min(pf$age),90))+
+  geom_line(stat = 'summary', fun.y = mean, linetype = 2)
 ```
 
 ***
@@ -138,7 +162,13 @@ Notes:
 Notes:
 
 ```{r Friending Rate}
+friend_tenure <- subset(pf, tenure>1)
+friend_tenure$rate <- friend_tenure$friend_count / friend_tenure$tenure
 
+summary(friend_tenure$rate)
+
+# alternative
+with(subset(pf, tenure>1), summary(friend_count/tenure))
 ```
 
 ***
@@ -151,6 +181,9 @@ What is the median friend rate?
 What is the maximum friend rate?
 
 ```{r Friendships Initiated}
+ggplot(data= subset(pf, tenure>0), aes(tenure, friendships_initiated/tenure))+
+  geom_line(aes(color = year_joined.bucket), stat = 'summary', fun.y = mean)+
+  scale_x_continuous(breaks = seq(0,3000,500))
 
 ```
 
@@ -161,30 +194,35 @@ Notes:
 
 ```{r Bias-Variance Tradeoff Revisited}
 
-ggplot(aes(x = tenure, y = friendships_initiated / tenure),
+ggplot(aes(x = tenure, y = friendships_initiated / tenure), # every day
        data = subset(pf, tenure >= 1)) +
   geom_line(aes(color = year_joined.bucket),
             stat = 'summary',
             fun.y = mean)
 
-ggplot(aes(x = 7 * round(tenure / 7), y = friendships_initiated / tenure),
+ggplot(aes(x = 7 * round(tenure / 7), y = friendships_initiated / tenure), # count only week or more
        data = subset(pf, tenure > 0)) +
   geom_line(aes(color = year_joined.bucket),
             stat = "summary",
             fun.y = mean)
 
-ggplot(aes(x = 30 * round(tenure / 30), y = friendships_initiated / tenure),
+ggplot(aes(x = 30 * round(tenure / 30), y = friendships_initiated / tenure), # count month or more
        data = subset(pf, tenure > 0)) +
   geom_line(aes(color = year_joined.bucket),
             stat = "summary",
             fun.y = mean)
 
-ggplot(aes(x = 90 * round(tenure / 90), y = friendships_initiated / tenure),
+ggplot(aes(x =tenure, y = friendships_initiated / tenure), # count 3 month or more
        data = subset(pf, tenure > 0)) +
-  geom_line(aes(color = year_joined.bucket),
-            stat = "summary",
-            fun.y = mean)
+  geom_smooth(aes(color = year_joined.bucket))
 
+```
+```{r}
+pf$tenure7 <- 7 * round(pf$tenure/7)
+pf$tenure30 <- 30 * round(pf$tenure/30)
+pf$tenure90 <- 90 * round(pf$tenure/90)
+
+View(pf,)
 ```
 
 ***
