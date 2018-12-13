@@ -241,6 +241,11 @@ Notes:
 Notes:
 
 ```{r Histograms Revisited}
+yo <- read.csv('yogurt.csv')
+unique(yo$id)
+str(yo)
+yo$id <- factor(yo$id)
+qplot(data= yo, x=price)
 
 ```
 
@@ -250,7 +255,9 @@ Notes:
 Notes:
 
 ```{r Number of Purchases}
+yo$all.purchases <- 
 
+transform
 ```
 
 ***
