@@ -1,0 +1,79 @@
+library(ggplot2)
+library(dplyr)
+
+data("diamonds")
+
+names(diamonds)
+
+# Create a histogram of diamond prices.
+# Facet the histogram by diamond color
+# and use cut to color the histogram bars.
+
+ggplot(data= diamonds, aes(x= price))+
+  geom_histogram(aes(color = cut, fill = cut))+ # could use position = "dodge" to set bars beside
+  scale_x_log10()+
+  scale_fill_brewer( type = 'qual' , palette = 'Set2')+
+  facet_wrap(~ color)+
+  theme_dark() # and a lot other theme with other option like font
+
+# Create a scatterplot of diamond price vs.
+# table and color the points by the cut of
+# the diamond.
+
+ggplot(data = diamonds, aes(table, price))+
+  geom_point(aes(color = cut), size = 3)+
+  scale_fill_brewer( type = 'qual')+
+  scale_x_continuous(breaks = seq(50,80,2))+
+  coord_cartesian( xlim= c(50,80))
+
+# Create a scatterplot of diamond price vs.
+# volume (x * y * z) and color the points by
+# the clarity of diamonds. Use scale on the y-axis
+# to take the log10 of price. You should also
+# omit the top 1% of diamond volumes from the plot.
+
+diamonds$volume <- diamonds$x * diamonds$y * diamonds$z
+
+ggplot(data= diamonds, aes(volume, price))+
+  geom_point(aes(color = clarity))+
+  coord_cartesian(xlim= c(0, quantile(diamonds$volume, 0.99)) )+
+  scale_color_brewer(type = 'div')+
+  scale_y_log10()
+# ____________________________________________________________________
+
+setwd('C:\\Users\\secretary-1\\Udacity\\Data Analysis\\P5')
+pf <- read.delim('pseudo_facebook.tsv')
+
+# Create a line graph of the median proportion of
+# friendships initiated ('prop_initiated') vs.
+# tenure and color the line segment by year_joined.bucket.
+
+pf$prop_initiated <- pf$friendships_initiated / pf$friend_count
+pf$year_joined <- floor(2014 - pf$tenure / 365)
+pf$year_joined.bucket <- cut(pf$year_joined, breaks = c(2004, 2009, 2011, 2012, 2014), labels = c("(2004,2009]", "(2009,2011]", "(2011,2012]", "(2012,2014]"))
+
+ggplot(data = subset(pf, !is.na(tenure)), aes(30*(round(tenure/30)), prop_initiated))+
+  geom_line(aes(color = year_joined.bucket), stat = 'summary', fun.y = median)
+
+ggplot(data = subset(pf, !is.na(tenure)), aes(tenure, prop_initiated))+
+  geom_line(aes(color = year_joined.bucket), stat = 'summary', fun.y = median)+
+  geom_smooth()
+
+# mean of the 2012-2014 group after excluding na
+group_2012 <- subset(pf, year_joined.bucket == '(2012,2014]' & !is.na(prop_initiated))
+mean(group_2012$prop_initiated)
+     
+ggplot(data = subset(pf, !is.na(tenure)), aes(30*(round(tenure/30)), prop_initiated))+
+  geom_line(aes(color = year_joined.bucket), stat = 'summary', fun.y = median)+
+  geom_hline(yintercept= mean(group_2012$prop_initiate))
+
+# Create a scatter plot of the price/carat ratio
+# of diamonds. The variable x should be
+# assigned to cut. The points should be colored
+# by diamond color, and the plot should be
+# faceted by clarity.
+
+ggplot(data= diamonds, aes(cut, price/carat))+
+  geom_jitter(aes(color = color))+
+  facet_wrap(~clarity)+
+  scale_color_brewer(type = 'div')
