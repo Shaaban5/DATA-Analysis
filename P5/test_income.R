@@ -4,7 +4,8 @@ library(gridExtra)
 
 
 setwd('C:\\Users\\secretary-1\\Udacity\\Data Analysis\\P5')
-pf <- read.csv('income_per_person_gdppercapita_ppp_inflation_adjusted.csv')
+pf <- read.csv('income_per_person_gdppercapita_ppp_inflation_adjusted.csv', check.names = FALSE)
+# check.names = FALSE used to disable changing years to Xyear
 
 every_44_mean <- data.frame(country=pf[,1], I44_1st = rowMeans(pf[,2:44], na.rm=TRUE),
            I44_2nd = rowMeans(pf[,45:88], na.rm=TRUE),
@@ -43,13 +44,36 @@ ggplot(convr_data1, aes(x=country, y=value, colour=duration)) +
   geom_point(size=2)+
   ylab('income per person')
 
-
-ggsave('gcc_income.jpeg')
-
-
 ggplot(aes(x = country, y= value, group = 1), data = convr_data1)+
   geom_col(aes(color = duration, fill = factor(duration)))
 
 
 ggplot(aes(x = duration, y= value, group = 1), data = convr_data1)+
   geom_line(aes(color = country))
+
+
+pf2 <- read.csv('Book1.csv')
+
+pf$country <- as.character(pf$country)
+class(pf$country)
+
+pf2$country <- as.character(pf2$country)
+class(pf2$country)
+
+new_pf2 <- left_join(pf, pf2, by=c('country'='country'))
+
+
+new_pf2$country <- factor(new_pf2$country)
+class(new_pf2$country)
+
+convr_data2 <- melt(new_pf2, id.vars=c("country",'Location', 'Income') , variable.name="Years", value.name ='GDP')
+
+convr_data2$Years <- as.integer(as.character(convr_data2$Years))
+class(convr_data2$Years)
+
+ggplot(data = convr_data2, aes(Years, GDP))+
+  geom_line(aes(color = Income), stat = 'summary', fun.y = mean)+
+  scale_x_continuous(breaks = seq(1800, 2018,20))+
+  facet_wrap(~Location)
+
+ggsave('countries_income_during_200.jpeg')
