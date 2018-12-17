@@ -3,14 +3,16 @@ Lesson 6
 
 ### Welcome
 Notes:
+```{r}
+library(ggplot2)
+data("diamonds")
+```
 
 ***
 
 ### Scatterplot Review
 
 ```{r Scatterplot Review}
-
-data("diamonds")
 ggplot(data = diamonds, aes(carat, price))+
   geom_point()+
   coord_cartesian(xlim = c(0, quantile(diamonds$carat,0.99 )),
@@ -78,6 +80,17 @@ Response:
 Notes:
 
 ```{r The Demand of Diamonds}
+library(gridExtra)
+
+p1 <- ggplot(data = diamonds, aes(price, color = I('black'), fill = I('blue')))+
+  geom_histogram() + ggtitle('Price')
+
+p2 <- ggplot(data = diamonds, aes(price))+
+  geom_histogram(aes(color = I('black'), fill = I('orange')))+ 
+  scale_x_log10() + ggtitle('Price log(10)')
+
+grid.arrange(p1, p2, ncol = 2)
+
 
 ```
 
@@ -91,6 +104,9 @@ Notes:
 ### Scatterplot Transformation
 
 ```{r Scatterplot Transformation}
+ggplot(data= diamonds, aes(carat ,price))+
+  geom_point() + scale_y_log10()
+
 
 ```
 
@@ -118,13 +134,14 @@ ggplot(aes(carat, price), data = diamonds) +
 ### Overplotting Revisited
 
 ```{r Sort and Head Tables}
-
+head(sort(table(diamonds$carat), decreasing = T))
+head(sort(table(diamonds$price), decreasing = T))
 ```
 
 
 ```{r Overplotting Revisited}
 ggplot(aes(carat, price), data = diamonds) + 
-  geom_point() + 
+  geom_point(alpha = 0.1, size = 3/4, position = 'jitter') + 
   scale_x_continuous(trans = cuberoot_trans(), limits = c(0.2, 3),
                      breaks = c(0.2, 0.5, 1, 2, 3)) + 
   scale_y_continuous(trans = log10_trans(), limits = c(350, 15000),
@@ -148,10 +165,10 @@ install.packages('RColorBrewer')
 library(RColorBrewer)
 
 ggplot(aes(x = carat, y = price), data = diamonds) + 
-  geom_point(alpha = 0.5, size = 1, position = 'jitter') +
+  geom_point(aes(color = clarity),alpha = 0.5, size = 1, position = 'jitter') +
   scale_color_brewer(type = 'div',
     guide = guide_legend(title = 'Clarity', reverse = T,
-    override.aes = list(alpha = 1, size = 2))) +  
+    override.aes = list(alpha = 1, size = 5))) +  # guide_legend setting for legend & override.aes is setting for coloring sample size
   scale_x_continuous(trans = cuberoot_trans(), limits = c(0.2, 3),
     breaks = c(0.2, 0.5, 1, 2, 3)) + 
   scale_y_continuous(trans = log10_trans(), limits = c(350, 15000),
@@ -163,41 +180,18 @@ ggplot(aes(x = carat, y = price), data = diamonds) +
 
 ### Clarity and Price
 Response:
-
+diamonds with better clarity seems expensive than diamonds with less clairty
 ***
 
 ### Price vs. Carat and Cut
 
 Alter the code below.
 ```{r Price vs. Carat and Cut}
-ggplot(aes(x = carat, y = price, color = clarity), data = diamonds) + 
-  geom_point(alpha = 0.5, size = 1, position = 'jitter') +
-  scale_color_brewer(type = 'div',
-                     guide = guide_legend(title = 'Clarity', reverse = T,
-                                          override.aes = list(alpha = 1, size = 2))) +  
-  scale_x_continuous(trans = cuberoot_trans(), limits = c(0.2, 3),
-                     breaks = c(0.2, 0.5, 1, 2, 3)) + 
-  scale_y_continuous(trans = log10_trans(), limits = c(350, 15000),
-                     breaks = c(350, 1000, 5000, 10000, 15000)) +
-  ggtitle('Price (log10) by Cube-Root of Carat and Clarity')
-```
-
-***
-
-### Cut and Price
-Response:
-
-***
-
-### Price vs. Carat and Color
-
-Alter the code below.
-```{r Price vs. Carat and Color}
 ggplot(aes(x = carat, y = price, color = cut), data = diamonds) + 
   geom_point(alpha = 0.5, size = 1, position = 'jitter') +
   scale_color_brewer(type = 'div',
-                     guide = guide_legend(title = Cut, reverse = T,
-                                          override.aes = list(alpha = 1, size = 2))) +  
+                     guide = guide_legend(title = 'CUT', reverse = T,
+                                          override.aes = list(alpha = 1, size = 3))) +  
   scale_x_continuous(trans = cuberoot_trans(), limits = c(0.2, 3),
                      breaks = c(0.2, 0.5, 1, 2, 3)) + 
   scale_y_continuous(trans = log10_trans(), limits = c(350, 15000),
@@ -207,9 +201,33 @@ ggplot(aes(x = carat, y = price, color = cut), data = diamonds) +
 
 ***
 
+### Cut and Price
+Response:
+we have to notice that most of the data are ideal cut so we can not decide accurately 
+
+***
+
+### Price vs. Carat and Color
+
+Alter the code below.
+```{r Price vs. Carat and Color}
+ggplot(aes(x = carat, y = price, color = color), data = diamonds) + 
+  geom_point(alpha = 0.5, size = 1, position = 'jitter') +
+  scale_color_brewer(type = 'div',
+                     guide = guide_legend(title = 'Color', reverse = F,
+                                          override.aes = list(alpha = 1, size = 2))) +  
+  scale_x_continuous(trans = cuberoot_trans(), limits = c(0.2, 3),
+                     breaks = c(0.2, 0.5, 1, 2, 3)) + 
+  scale_y_continuous(trans = log10_trans(), limits = c(350, 15000),
+                     breaks = c(350, 1000, 5000, 10000, 15000)) +
+  ggtitle('Price (log10) by Cube-Root of Carat and Color')
+```
+
+***
+
 ### Color and Price
 Response:
-
+colour does influence the price as the better colour the higher price as per the plot
 ***
 
 ### Linear Models in R
@@ -229,6 +247,7 @@ m3 <- update(m2, ~ . + cut)
 m4 <- update(m3, ~ . + color)
 m5 <- update(m4, ~ . + clarity)
 mtable(m1, m2, m3, m4, m5)
+mtable(m1, m2, m3, m4, m5, sdigits = 3)
 ```
 
 Notice how adding cut to our model does not help explain much of the variance
