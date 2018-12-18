@@ -270,13 +270,13 @@ Response:
 Notes:
 
 ```{r A Bigger, Better Data Set}
-install.package('bitops')
+install.packages('bitops')
 install.packages('RCurl')
 library('bitops')
 library('RCurl')
 
 diamondsurl = getBinaryURL("https://raw.github.com/solomonm/diamonds-data/master/BigDiamonds.Rda")
-load(rawConnection(diamondsurl))
+load('BigDiamonds.rda')
 ```
 
 The code used to obtain the data is available here:
@@ -286,7 +286,17 @@ https://github.com/solomonm/diamonds-data
 Notes:
 
 ```{r Building a Model Using the Big Diamonds Data Set}
+diamondsbig$logprice <- log(diamondsbig$price)
 
+# data will be subest to contain below 10000 and with certified GIA only
+m_1 <- lm(logprice ~ I(carat^(1/3)), data = diamondsbig[diamondsbig$price < 10000 & 
+                                                         diamondsbig$cert == 'GIA', ])
+m_2 <- update(m_1, ~ . + carat)
+m_3 <- update(m_2, ~ . + cut)
+m_4 <- update(m_3, ~ . + color)
+m_5 <- update(m_4, ~ . + clarity)
+
+mtable(m_1, m_2, m_3, m_4, m_5)
 ```
 
 
@@ -298,11 +308,16 @@ Example Diamond from BlueNile:
 Round 1.00 Very Good I VS1 $5,601
 
 ```{r}
-#Be sure you’ve loaded the library memisc and have m5 saved as an object in your workspace.
+#Be sure you have loaded the library memisc and have m5 saved as an object in your workspace.
 thisDiamond = data.frame(carat = 1.00, cut = "V.Good",
                          color = "I", clarity="VS1")
-modelEstimate = predict(m5, newdata = thisDiamond,
+modelEstimate = predict(m_5, newdata = thisDiamond,
                         interval="prediction", level = .95)
+
+
+modelEstimate
+exp(modelEstimate)
+
 ```
 
 Evaluate how well the model predicts the BlueNile diamond's price. Think about the fitted point estimate as well as the 95% CI.
