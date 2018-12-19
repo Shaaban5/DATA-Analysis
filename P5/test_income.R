@@ -76,4 +76,7 @@ ggplot(data = convr_data2, aes(Years, GDP))+
   scale_x_continuous(breaks = seq(1800, 2018,20))+
   facet_wrap(~Location)
 
-ggsave('countries_income_during_200.jpeg')
+ggplot(convr_data2, aes(x= Location, fill = Income))+
+  geom_bar()+
+  coord_polar()
+
