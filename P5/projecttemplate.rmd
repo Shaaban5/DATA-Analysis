@@ -220,9 +220,22 @@ ggplot(pf, aes(grades, fill = Alcohol_precent))+
 
 
 ```{r echo=FALSE, Bivariate_Plots}
-ggplot(pf, aes(sqrt(citric.acid), pH, color = Sweetness))+
-  geom_point(alpha = 0.3, position = 'jitter')
-  
+ggplot(pf, aes(citric.acid, pH, color = grades))+
+  geom_point(alpha = 0.5, position = 'jitter')+
+  scale_color_brewer(type = 'div', 
+                     guide = guide_legend(title = 'Quality Grades', reverse = T,
+                                          override.aes = list(alpha = 1, size = 3)))+
+  ggtitle('Scatter plot for pH with citric acid coloured by ')
+
+```
+
+
+```{r echo=FALSE, Bivariate_Plots}
+ggplot(pf, aes(free.sulfur.dioxide, total.sulfur.dioxide, color = grades))+
+  geom_line(stat = 'summary', fun.y = mean)+
+  coord_cartesian(xlim = c(min(pf$total.sulfur.dioxide), quantile(pf$free.sulfur.dioxide, 0.99)),
+                  ylim = c(min(pf$total.sulfur.dioxide), quantile(pf$total.sulfur.dioxide, 0.99)))+
+  ggtitle('Relationship between Total & Free sulfur.dioxide coloured by Quality grades')
 
 ```
 
