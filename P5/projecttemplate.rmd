@@ -157,6 +157,7 @@ round(cor(pf), 3)
 
 ### Other feature in the dataset that will help support our investigation:
 - As per the attribution description of density: "density of water is close to that of water depending on the percent alcohol and sugar content" so, I will consider residual sugar in the investigation.
+- Strong relationship has been found between free.sulfur.dioxide and total.sulfur.dioxide which is logical.
 
 ### Creating new variables from existing variables in the dataset:
 - According to our interests in the above features, new variable will be created to support our investigation:
@@ -180,7 +181,7 @@ table(pf$Alcohol_precent)
 
 ```{r echo=FALSE, Univariate_Plots}
 
-pf$Sweetness <- cut(pf$residual.sugar, breaks = c(0.8, 1.9, 2.5,15.5), labels = c("Low_sweet", "Medium_sweet", "High_sweet"))
+pf$Sweetness <- cut(pf$residual.sugar, breaks = c(0.8, 2, 4,15.5), labels = c("Low_sweet", "Medium_sweet", "High_sweet"))
 
 table(pf$Sweetness)
 ```
@@ -199,18 +200,18 @@ supporting variables. Try to look at relationships between supporting variables
 as well.
 
 ```{r echo=FALSE, Bivariate_Plots}
-ggplot(pf, aes(density, fixed.acidity, color = Alcohol_precent))+
-  geom_point(alpha = 0.3, position = 'jitter')+
-  scale_color_brewer(type = 'qual', palette = 'Set1',
-                     guide = guide_legend(title = 'Alcohol_precent', reverse = T,
-                                          override.aes = list(alpha = 1, size = 3)))+
-  coord_cartesian(ylim = c(min(pf$fixed.acidity), quantile(pf$fixed.acidity, 0.99)))+
-  facet_wrap(~grades, ncol = 4)+
-  ggtitle('Grades scatter plot by Density and log(fixed acidity) colored by Alcohol precentage')
+ggplot(pf, aes(density, fixed.acidity, color = '#ff4d4d'))+
+  geom_point(position = 'Jitter')+
+  ggtitle('Relationship between Density and fixed acidity')
 
 ```
-**plot omitted 1% of top fixed.acidity**
 
+```{r echo=FALSE, Bivariate_Plots}
+ggplot(pf, aes(density, color = grades))+
+  geom_density()+
+  ggtitle('Density shapes as per Quality grades')
+
+```
 ```{r echo=FALSE, Bivariate_Plots}
 ggplot(pf, aes(grades, fill = Alcohol_precent))+
   geom_bar()+
@@ -220,40 +221,52 @@ ggplot(pf, aes(grades, fill = Alcohol_precent))+
 
 
 ```{r echo=FALSE, Bivariate_Plots}
-ggplot(pf, aes(citric.acid, pH, color = grades))+
-  geom_point(alpha = 0.5, position = 'jitter')+
-  scale_color_brewer(type = 'div', 
-                     guide = guide_legend(title = 'Quality Grades', reverse = T,
-                                          override.aes = list(alpha = 1, size = 3)))+
-  ggtitle('Scatter plot for pH with citric acid coloured by ')
+ggplot(pf, aes(citric.acid, pH, color = '#ff4d4d' ))+
+  geom_point(position = 'jitter')+
+  ggtitle('Relatioship between pH and citric acid')
 
 ```
 
 
 ```{r echo=FALSE, Bivariate_Plots}
-ggplot(pf, aes(free.sulfur.dioxide, total.sulfur.dioxide, color = grades))+
-  geom_line(stat = 'summary', fun.y = mean)+
-  coord_cartesian(xlim = c(min(pf$total.sulfur.dioxide), quantile(pf$free.sulfur.dioxide, 0.99)),
-                  ylim = c(min(pf$total.sulfur.dioxide), quantile(pf$total.sulfur.dioxide, 0.99)))+
-  ggtitle('Relationship between Total & Free sulfur.dioxide coloured by Quality grades')
+ggplot(pf, aes(free.sulfur.dioxide, total.sulfur.dioxide))+
+  geom_line()+
+  facet_wrap(~ grades, ncol = 1)
+  ggtitle('Distribution of Total & Free sulfur.dioxide')
 
 ```
+
+```{r echo=FALSE, Bivariate_Plots}
+ggplot(pf, aes(alcohol, residual.sugar))+
+  geom_line()+
+  ggtitle('Relationship Alcohol and Residual sugar')
+
+```
+
+
+```{r echo=FALSE, Bivariate_Plots}
+ggplot(pf, aes(chlorides, sulphates))+
+  geom_point(alpha = 0.5, size = 2, position = 'Jitter')+
+  ggtitle('Relationship between Chlorides and Sulphates')
+
+```
+
 
 # Bivariate Analysis
 
 > **Tip**: As before, summarize what you found in your bivariate explorations
 here. Use the questions below to guide your discussion.
 
-### Talk about some of the relationships you observed in this part of the \
-investigation. How did the feature(s) of interest vary with other features in \
-the dataset?
+### Relationships I observed in the above plots:
 
-### Did you observe any interesting relationships between the other features \
-(not the main feature(s) of interest)?
-
-### What was the strongest relationship you found?
-
-
+1. Strong positive relationship between density and fixed acidity.
+2. Comparing density shapes according to quality grades does not give much information, but I found that at low density (0.990 to 0.991) we received only good and very good quality rating.
+3. Relationship between alcohol level and quality grades shows that almost all the very good rates have been given to high & medium alcohol level, and the same to good rates.
+4. Relatioship between pH and citric acid shows weak negtive relationship.
+5. Logical relationship between free & total sulfur dioxide, but when we facet it to quality grades we found strange behavior, and we need to investigate more.
+6. Relationship Alcohol and Residual sugar does not show much information but I can see that Residual sugar getting a little bit lower as alcohol increase.
+7. Relationship between Chlorides and Sulphates shows non linear relationship, and indicate positive relationship. 
+8. 
 # Multivariate Plots Section
 
 > **Tip**: Now it's time to put everything together. Based on what you found in
@@ -264,8 +277,31 @@ you plan on creating any mathematical models, this is the section where you
 will do that.
 
 ```{r echo=FALSE, Multivariate_Plots}
+ggplot(subset(pf, Alcohol_precent == 'High'), 
+       aes(residual.sugar, color = Sweetness, fill = Sweetness))+
+  geom_bar()+
+  scale_y_log10()+
+  ylab('Transforming log(frequency)')+
+  facet_wrap(~grades, ncol = 4)+
+  ggtitle('Relationship between Quality and Sweetness at high alcohol level')
+```
+
+```{r echo=FALSE, Multivariate_Plots}
+ ggplot(pf, aes(chlorides, sulphates,color = grades))+
+  geom_point(alpha = 0.5, size = 2, position = 'Jitter')+
+  scale_x_continuous(breaks = seq(0,11,0.02))+
+  scale_y_continuous(breaks = seq(0, 1.25,0.2))+
+  coord_cartesian(xlim = c(min(pf$chlorides), quantile(pf$chlorides, 0.98)), 
+                  ylim = c(min(pf$sulphates), quantile(pf$sulphates, 0.99)))+
+  scale_color_brewer(type = 'div', 
+                     guide = guide_legend(title = 'Quality Grades', reverse = T, 
+                                          override.aes = list(alpha = 1, size = 3)))+
+  geom_hline(yintercept= c(0.65, 1.05), color='black', linetype = 2)+
+  geom_vline(xintercept= c(0.03, 0.1), color='black', linetype = 2)+
+  ggtitle('Relationship between Chlorides and Sulphates according to quality')
 
 ```
+**Omitting 1% of top sulphates values and 2% of top chlorides values**
 
 # Multivariate Analysis
 
@@ -273,10 +309,15 @@ will do that.
 investigation. Were there features that strengthened each other in terms of \
 looking at your feature(s) of interest?
 
+1. Since we observed some relation between alcohol and residual sugar in the bivariate analysis section as the residual.sugar getting a little bit lower at high alcohol, I intended to look more closely by subsetting our data by high alcohol level and get the effect of quality grades.
+
+2. Relationship between chlorides and sulphates is positive but we need to look closely at the quality grades applied to it.
+
 ### Were there any interesting or surprising interactions between features?
 
-### OPTIONAL: Did you create any models with your dataset? Discuss the \
-strengths and limitations of your model.
+1. Relation between alcohol and residual sugar: I found that medium sweet and low sweet wine has much better rating than high sweet wine at the high level alcohol(high alcohol level receive better rating as we mentioned before).
+
+2. Relation between chlorides and sulphates: We could find the best wine rating when chlorides is between 0.03-0.1 and sulphates between 0.65-1.05, as we found most of Very good and good rating in this range along with some medium quality rates.
 
 ------
 
@@ -292,15 +333,28 @@ make sure you justify why you chose each plot by describing what it shows.
 
 ### Plot One
 ```{r echo=FALSE, Plot_One}
-
+ggplot(pf, aes(free.sulfur.dioxide, total.sulfur.dioxide, color = grades))+
+  geom_line(stat = 'summary', fun.y = mean)+
+  coord_cartesian(xlim = c(min(pf$total.sulfur.dioxide), quantile(pf$free.sulfur.dioxide, 0.99)),
+                  ylim = c(min(pf$total.sulfur.dioxide), quantile(pf$total.sulfur.dioxide, 0.99)))+
+  ylab('Transforming log(frequency)')+
+  ggtitle('Relationship between Total & Free sulfur.dioxide coloured by Quality grades')
 ```
+**Omitting 1% of top total & free sulfur.dioxide**
 
 ### Description One
 
 
 ### Plot Two
 ```{r echo=FALSE, Plot_Two}
-
+ggplot(pf, aes(density, fixed.acidity, color = Alcohol_precent))+
+  geom_point(alpha = 0.3, position = 'jitter')+
+  scale_color_brewer(type = 'qual', palette = 'Set1',
+                     guide = guide_legend(title = 'Alcohol_precent', reverse = T,
+                                          override.aes = list(alpha = 1, size = 3)))+
+  coord_cartesian(ylim = c(min(pf$fixed.acidity), quantile(pf$fixed.acidity, 0.99)))+
+  facet_wrap(~grades, ncol = 4)+
+  ggtitle('Grades scatter plot by Density and log(fixed acidity) colored by Alcohol precentage')
 ```
 
 ### Description Two
@@ -308,6 +362,13 @@ make sure you justify why you chose each plot by describing what it shows.
 
 ### Plot Three
 ```{r echo=FALSE, Plot_Three}
+ggplot(pf, aes(citric.acid, pH, color = grades))+
+  geom_point(alpha = 0.5, size = 2, position = 'jitter')+
+  scale_color_brewer(type = 'div', 
+                     guide = guide_legend(title = 'Quality Grades', reverse = T,
+                                          override.aes = list(alpha = 1, size = 3)))+
+  ggtitle('Relatioship between pH and citric acid coloured by Quality')
+
 
 ```
 
