@@ -1,14 +1,8 @@
+```{r, echo=FALSE}
+knitr::opts_chunk$set(error = TRUE)
+```
 Red Wine dataset analysis by Ahmed Shaaban
 ========================================================
-
-> **Tip**: You will see quoted sections like this throughout the template to
-help you construct your report. Make sure that you remove these notes before
-you finish and submit your project!
-
-> **Tip**: One of the requirements of this project is that your code follows
-good formatting techniques, including limiting your lines to 80 characters or
-less. If you're using RStudio, go into Preferences \> Code \> Display to set up
-a margin line to help you keep track of this guideline!
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
 # Load all of the packages that you end up using in your analysis in this code
@@ -22,43 +16,31 @@ a margin line to help you keep track of this guideline!
 # The other parameters for "message" and "warning" should also be set to FALSE
 # for other code chunks once you have verified that each plot comes out as you
 # want it to. This will clean up the flow of your report.
-
 library(ggplot2)
-library(dplyr)
-library(gridExtra)
-library(reshape2)
 library(gridExtra)
 ```
 > **Introduction to this dataset:** 
+
 - This dataset is public available for research. The details are described in [Cortez et al., 2009]
 - Modeling wine preferences by data mining from physicochemical properties.
 - The inputs include objective tests and the output is based on sensory data (median of at least 3 evaluations made by wine experts). Each expert graded the wine quality between 0 (very bad) and 10 (very excellent).
 - Number of Instances 1599, Number of Attributes 11 + the quality graded.
 
+** Our data set contains:**
 ```{r echo=FALSE, Load_the_Data}
 # Load the Data
 pf <-  read.csv('wineQualityReds.csv', row.names = 1)
+str(pf)
 ```
-
-> **Tip**: Before you create any plots, it is a good idea to provide a short
-introduction into the dataset that you are planning to explore. Replace this
-quoted text with that general information!
-
 
 # Univariate Plots Section
 
-> **Tip**: In this section, you should perform some preliminary exploration of
-your dataset. Run some summaries of the data and create univariate plots to
-understand the structure of the individual variables in your dataset. Don't
-forget to add a comment after each plot or closely-related group of plots!
-There should be multiple code chunks and text sections; the first one below is
-just to help you get started.
-
 
 **Display data summary**
-```{r echo=FALSE, Load_the_Data}
+```{r echo=FALSE, Summary}
 summary(pf)
 ```
+
 **Notice:**
 - I can see large differences between 3rd Qu. and max. in residual.sugar, free.sulfur.dioxide, total.sulfur.dioxide and sulphates which may contains outliers and will produce long tailled histogram.
 - Quality grades in between 3 and 8.
@@ -106,7 +88,7 @@ grid.arrange(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11)
 
 
 **Display the quailty grades**
-```{r echo=FALSE, Univariate_Plots}
+```{r echo=FALSE, Univariate_Plots_1}
 ggplot(pf, aes(quality))+
   geom_bar(color = 'black', fill = '#ff4d4d')+
   coord_polar()
@@ -114,20 +96,12 @@ ggplot(pf, aes(quality))+
 
 **We can see that most of the quality rating given were 5 and 6**
 
-> **Tip**: Make sure that you leave a blank line between the start / end of
-each code block and the end / start of your Markdown text so that it is
-formatted nicely in the knitted text. Note as well that text on consecutive
-lines is treated as a single space. Make sure you have a blank line between
-your paragraphs so that they too are formatted for easy readability.
-
 # Univariate Analysis
 
-> **Tip**: Now that you've completed your univariate explorations, it's time to
-reflect on and summarize what you've found. Use the questions below to help you
-gather your observations and add your own if you have other thoughts!
-
 ### The structure of this dataset?
+
 1. Data with 1599 tests (row) and 11 attributes (columns) + 1 extra column for the quailty grades between 0 & 10.
+
 2. Attribute informations: 
 - fixed acidity: most acids involved with wine or fixed or nonvolatile (do not evaporate readily)
 - volatile acidity: the amount of acetic acid in wine (too high can lead bad vinegar taste)
@@ -144,8 +118,9 @@ gather your observations and add your own if you have other thoughts!
 ### What are the main features of interest in our dataset?
 
 **First: Analysing quality is our aim**
+
 **Second: Display correlation table to decide the interested features**
-```{r echo=FALSE, Univariate_Plots}
+```{r echo=FALSE, Univariate_Plots_2}
 round(cor(pf), 3)
 ```
 
@@ -161,17 +136,16 @@ round(cor(pf), 3)
 
 ### Creating new variables from existing variables in the dataset:
 - According to our interests in the above features, new variable will be created to support our investigation:
-1. since most of gardes given in 5 & 6 and maximum rate is 8, i will set defferent gardes for each one as follow: poor<=4, med_quality=5, good=6, v.good>=7. 
-```{r echo=FALSE, Univariate_Plots}
 
+1. since most of gardes given in 5 & 6 and maximum rate is 8, i will set defferent gardes for each one as follow: poor<=4, med_quality=5, good=6, v.good>=7. 
+```{r echo=FALSE, Univariate_Plots_3}
 pf$grades <- cut(pf$quality, breaks = c(2, 4, 5, 6, 8), labels = c("Poor", "Med_quality", "Good", "V.Good"))
 
 table(pf$grades)
 ```
 
 2. alcohol levels will be set as per summary as follow: low<= 9.5, low<Medium<11.5, High>11.5
-```{r echo=FALSE, Univariate_Plots}
-
+```{r echo=FALSE, Univariate_Plots_4}
 pf$Alcohol_precent <- cut(pf$alcohol, breaks = c(8, 9.5, 11.5,15), labels = c("Low", "Medium", "High"))
 
 table(pf$Alcohol_precent)
@@ -179,40 +153,33 @@ table(pf$Alcohol_precent)
 
 3. The Sweetness is very important measure of wine taste and it will be set as follow: low_sweet<= 9.5, low<Medium_sweet<11.5, High_sweet>11.5
 
-```{r echo=FALSE, Univariate_Plots}
-
+```{r echo=FALSE, Univariate_Plots_5}
 pf$Sweetness <- cut(pf$residual.sugar, breaks = c(0.8, 2, 4,15.5), labels = c("Low_sweet", "Medium_sweet", "High_sweet"))
 
 table(pf$Sweetness)
 ```
 
-### Of the features you investigated, were there any unusual distributions? \
-Did you perform any operations on the data to tidy, adjust, or change the form \
-of the data? If so, why did you do this?
+### Other investigations : 
+- Density were presented with cm and should be converted into dm to match the other attributes.
 
 
 # Bivariate Plots Section
 
-> **Tip**: Based on what you saw in the univariate plots, what relationships
-between variables might be interesting to look at in this section? Don't limit
-yourself to relationships between a main output feature and one of the
-supporting variables. Try to look at relationships between supporting variables
-as well.
-
-```{r echo=FALSE, Bivariate_Plots}
+```{r echo=FALSE, Bivariate_Plots_1}
 ggplot(pf, aes(density, fixed.acidity, color = '#ff4d4d'))+
   geom_point(position = 'Jitter')+
   ggtitle('Relationship between Density and fixed acidity')
 
 ```
 
-```{r echo=FALSE, Bivariate_Plots}
+```{r echo=FALSE, Bivariate_Plots_2}
 ggplot(pf, aes(density, color = grades))+
   geom_density()+
   ggtitle('Density shapes as per Quality grades')
 
 ```
-```{r echo=FALSE, Bivariate_Plots}
+
+```{r echo=FALSE, Bivariate_Plots_3}
 ggplot(pf, aes(grades, fill = Alcohol_precent))+
   geom_bar()+
   ggtitle('Relationship between Quality and Alcohol level')
@@ -220,7 +187,7 @@ ggplot(pf, aes(grades, fill = Alcohol_precent))+
 ```
 
 
-```{r echo=FALSE, Bivariate_Plots}
+```{r echo=FALSE, Bivariate_Plots_4}
 ggplot(pf, aes(citric.acid, pH, color = '#ff4d4d' ))+
   geom_point(position = 'jitter')+
   ggtitle('Relatioship between pH and citric acid')
@@ -228,15 +195,16 @@ ggplot(pf, aes(citric.acid, pH, color = '#ff4d4d' ))+
 ```
 
 
-```{r echo=FALSE, Bivariate_Plots}
+```{r echo=FALSE, Bivariate_Plots_5}
 ggplot(pf, aes(free.sulfur.dioxide, total.sulfur.dioxide))+
   geom_line()+
-  facet_wrap(~ grades, ncol = 1)
-  ggtitle('Distribution of Total & Free sulfur.dioxide')
+  facet_wrap(~ grades, ncol = 1)+
+  ggtitle('Distribution of Total & Free sulfur.dioxide according to quality')
 
 ```
 
-```{r echo=FALSE, Bivariate_Plots}
+
+```{r echo=FALSE, Bivariate_Plots_6}
 ggplot(pf, aes(alcohol, residual.sugar))+
   geom_line()+
   ggtitle('Relationship Alcohol and Residual sugar')
@@ -244,39 +212,38 @@ ggplot(pf, aes(alcohol, residual.sugar))+
 ```
 
 
-```{r echo=FALSE, Bivariate_Plots}
+```{r echo=FALSE, Bivariate_Plots_7}
 ggplot(pf, aes(chlorides, sulphates))+
   geom_point(alpha = 0.5, size = 2, position = 'Jitter')+
   ggtitle('Relationship between Chlorides and Sulphates')
 
 ```
 
+```{r echo=FALSE, Bivariate_Plots_8}
+ggplot(pf, aes(volatile.acidity, fixed.acidity))+
+  geom_point(alpha = 0.5, size = 2, position = 'Jitter')+
+  ggtitle('Relationship between volatile acidity and fixed acidity')
+
+```
 
 # Bivariate Analysis
 
-> **Tip**: As before, summarize what you found in your bivariate explorations
-here. Use the questions below to guide your discussion.
 
 ### Relationships I observed in the above plots:
 
-1. Strong positive relationship between density and fixed acidity.
+1. Strong positive relationship between density and fixed acidity but we need to convert density into dm^3.
 2. Comparing density shapes according to quality grades does not give much information, but I found that at low density (0.990 to 0.991) we received only good and very good quality rating.
 3. Relationship between alcohol level and quality grades shows that almost all the very good rates have been given to high & medium alcohol level, and the same to good rates.
 4. Relatioship between pH and citric acid shows weak negtive relationship.
 5. Logical relationship between free & total sulfur dioxide, but when we facet it to quality grades we found strange behavior, and we need to investigate more.
 6. Relationship Alcohol and Residual sugar does not show much information but I can see that Residual sugar getting a little bit lower as alcohol increase.
 7. Relationship between Chlorides and Sulphates shows non linear relationship, and indicate positive relationship. 
-8. 
+8. Relationship between volatile.acidity and fixed.acidity shows also non linear relationship does not give information. 
+
 # Multivariate Plots Section
 
-> **Tip**: Now it's time to put everything together. Based on what you found in
-the bivariate plots section, create a few multivariate plots to investigate
-more complex interactions between variables. Make sure that the plots that you
-create here are justified by the plots you explored in the previous section. If
-you plan on creating any mathematical models, this is the section where you
-will do that.
-
-```{r echo=FALSE, Multivariate_Plots}
+## Plot one:
+```{r echo=FALSE, Multivariate_Plots_1}
 ggplot(subset(pf, Alcohol_precent == 'High'), 
        aes(residual.sugar, color = Sweetness, fill = Sweetness))+
   geom_bar()+
@@ -286,7 +253,8 @@ ggplot(subset(pf, Alcohol_precent == 'High'),
   ggtitle('Relationship between Quality and Sweetness at high alcohol level')
 ```
 
-```{r echo=FALSE, Multivariate_Plots}
+## Plot Two:
+```{r echo=FALSE, Multivariate_Plots_2}
  ggplot(pf, aes(chlorides, sulphates,color = grades))+
   geom_point(alpha = 0.5, size = 2, position = 'Jitter')+
   scale_x_continuous(breaks = seq(0,11,0.02))+
@@ -298,16 +266,18 @@ ggplot(subset(pf, Alcohol_precent == 'High'),
                                           override.aes = list(alpha = 1, size = 3)))+
   geom_hline(yintercept= c(0.65, 1.05), color='black', linetype = 2)+
   geom_vline(xintercept= c(0.03, 0.1), color='black', linetype = 2)+
+  xlab('sodium chloride - g / dm^3')+
+  ylab('potassium sulphate - g / dm3')+
   ggtitle('Relationship between Chlorides and Sulphates according to quality')
 
 ```
+
 **Omitting 1% of top sulphates values and 2% of top chlorides values**
+
 
 # Multivariate Analysis
 
-### Talk about some of the relationships you observed in this part of the \
-investigation. Were there features that strengthened each other in terms of \
-looking at your feature(s) of interest?
+### Very interesting relationship relationships I observed:
 
 1. Since we observed some relation between alcohol and residual sugar in the bivariate analysis section as the residual.sugar getting a little bit lower at high alcohol, I intended to look more closely by subsetting our data by high alcohol level and get the effect of quality grades.
 
@@ -323,42 +293,39 @@ looking at your feature(s) of interest?
 
 # Final Plots and Summary
 
-> **Tip**: You've done a lot of exploration and have built up an understanding
-of the structure of and relationships between the variables in your dataset.
-Here, you will select three plots from all of your previous exploration to
-present here as a summary of some of your most interesting findings. Make sure
-that you have refined your selected plots for good titling, axis labels (with
-units), and good aesthetic choices (e.g. color, transparency). After each plot,
-make sure you justify why you chose each plot by describing what it shows.
-
 ### Plot One
 ```{r echo=FALSE, Plot_One}
 ggplot(pf, aes(free.sulfur.dioxide, total.sulfur.dioxide, color = grades))+
   geom_line(stat = 'summary', fun.y = mean)+
   coord_cartesian(xlim = c(min(pf$total.sulfur.dioxide), quantile(pf$free.sulfur.dioxide, 0.99)),
                   ylim = c(min(pf$total.sulfur.dioxide), quantile(pf$total.sulfur.dioxide, 0.99)))+
-  ylab('Transforming log(frequency)')+
-  ggtitle('Relationship between Total & Free sulfur.dioxide coloured by Quality grades')
+  ylab('total sulfur dioxide (mg/dm^3)')+
+  xlab('free sulfur dioxide (mg/dm^3)')+
+  ggtitle('Relationship between Average Total & Free sulfur dioxide coloured by Quality grades')
 ```
+
 **Omitting 1% of top total & free sulfur.dioxide**
 
 ### Description One
-
+- Relationship between Total & Free sulfur dioxide has been presented by average mean, I choose this plot because all the poor rating wine with free sulfur.dioxide of 40 and after 40 rating is meduim quality, good and very good.
+- After (free sulfur.dioxide of 40) less total sulfur dioxide means better quality rating.
 
 ### Plot Two
 ```{r echo=FALSE, Plot_Two}
-ggplot(pf, aes(density, fixed.acidity, color = Alcohol_precent))+
-  geom_point(alpha = 0.3, position = 'jitter')+
+ggplot(pf, aes(density/10, fixed.acidity, color = Alcohol_precent))+
+  geom_point(alpha = 0.4, position = 'jitter')+
   scale_color_brewer(type = 'qual', palette = 'Set1',
                      guide = guide_legend(title = 'Alcohol_precent', reverse = T,
                                           override.aes = list(alpha = 1, size = 3)))+
   coord_cartesian(ylim = c(min(pf$fixed.acidity), quantile(pf$fixed.acidity, 0.99)))+
   facet_wrap(~grades, ncol = 4)+
-  ggtitle('Grades scatter plot by Density and log(fixed acidity) colored by Alcohol precentage')
+  ylab('Fixed acidity - g / dm^3')+
+  xlab('Density by dm (g / dm^3)')+
+  ggtitle('Grades scatter plot by Density and fixed acidity colored by Alcohol precentage')
 ```
 
 ### Description Two
-
+- Very interesting relationship between density and fixed.acidity as it is strong positive relationship, after converting density to dm and facet it to quality rating and coloured by alcohol levels I could not found evdince how fixed acidity and  density affect the quality but i found that best rates were given to high and medium alcohol llevels.
 
 ### Plot Three
 ```{r echo=FALSE, Plot_Three}
@@ -367,21 +334,18 @@ ggplot(pf, aes(citric.acid, pH, color = grades))+
   scale_color_brewer(type = 'div', 
                      guide = guide_legend(title = 'Quality Grades', reverse = T,
                                           override.aes = list(alpha = 1, size = 3)))+
+  ylab('pH')+
+  xlab('Citric acid (g / dm^3)')+
   ggtitle('Relatioship between pH and citric acid coloured by Quality')
-
 
 ```
 
 ### Description Three
-
+- Interesting plot in our search of quality, relationship between pH and citric is negitive and weak but I can see that with low pH and high citric acid we can find good and very good quality.
 ------
 
 # Reflection
 
-> **Tip**: Here's the final step! Reflect on the exploration you performed and
-the insights you found. What were some of the struggles that you went through?
-What went well? What was surprising? Make sure you include an insight into
-future work that could be done with the dataset.
-
-> **Tip**: Don't forget to remove this, and the other **Tip** sections before
-saving your final work and knitting the final report!
+> Red wine dataset needed a lot exploration to determin which attribute will affect the quality.
+> Very interesting analysis that could help a lot to put the best standards for good wine.
+> Many plots does not help a lot to determin quality but others surprised me such as the sweetness should be low or medium for best quality.
